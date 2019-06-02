@@ -1,0 +1,73 @@
+---
+title: "L3P4: Diferença de sono em alunos do curso de Computação na UFCG"
+author: "Lorena Pereira"
+output: html_notebook
+---
+
+### Importando dos dados
+```{r}
+dados = read_csv(here::here("data/amostra-alunos-comfpcc.csv"))
+
+dados = dados %>%
+    rename(
+        sono_semana = `Quantas horas por noite você dorme DURANTE A SEMANA em média?`,
+        sono_fds = `Quantas horas por noite você dorme durante NO FIM DE SEMANA em média?`,
+        disciplinas = `Quantas disciplinas você está cursando esse semestre?`,
+        cafe = `Quantas xícaras de café você tomou ontem?`,
+        segue_gh = `Quantas pessoas você segue no github?`,
+        seguido_gh = `Quantas pessoas seguem você no github?`,
+        quase_concluinte = `Você está dois períodos ou menos de concluir?`
+    )
+
+dados = dados %>% 
+    mutate(data = lubridate::mdy_hms(Timestamp),
+           turma = if_else(data < as.POSIXct("2019-05-24 12:00:00"), 
+                           "cdd", 
+                           "fpcc"))%>% 
+    filter(segue_gh < 800, 
+           disciplinas < 10,
+           seguido_gh < 900)
+
+```
+
+## 1. Qual o impacto do curso no sono dos alunos de graduação e de pós graduação, comparando quanto eles dormem durante a semana e nos fins de semana?
+
+```{r}
+
+dados %>%
+    summarise(media_sono_semana = mean(sono_semana),
+              media_sono_fds = mean(sono_fds))
+
+```
+
+```{r}
+dados %>%
+    mutate(diferenca = sono_semana - sono_fds) %>%
+    summarise(media_diferenca = mean(diferenca))
+```
+Definindo o impacto do curso no sono dos alunos como a diferença entre o tempo dormido durante a semana e o tempo dormido no final de semana, podemos observar que o curso tem um impacto negativo no sono dos alunos. Os alunos dormem menos durante a semana, que é geralmente o momento de maior frequência das atividades do curso, do que no final de semana.
+
+
+## 2. O impacto é maior para um dos cursos?
+
+![Figura gerada com o www.estimationstats.com](fig.png)
+Considerando a turma de CDD, tivemos uma diferença média de -1.95 [95.0%CI -2.62, -1.33]
+Já para a turma de FPCC tivemos uma diferença média de -1.38 [95.0%CI -2.0, -0.917]
+
+O valor de -1.95 significa que existe uma distância maior entre o tempo dormido na semana e no final de semana para os alunos da graduação, quando comparado com o valor de -1.38 da turma da pós graduação.
+
+É possível afirmar com um método de 95% de confiança que a turma de CDD pode ter valores reais para a população no intervalo de  -2.62 a -1.33. E a turma de FPCC pode ter valores reais para a população no -2.0 a -0.917. 
+
+Olhando a média dos dois grupos, fica mais fácil de entender o resultado da imagem anterior. 
+
+```{r}
+
+dados %>%
+    group_by(turma) %>%
+    summarise(mean_semana = mean(sono_semana),
+              mean_fds = mean(sono_fds))
+
+```
+
+A turma de cdd em média dorme mais do que a turma de fpcc, quando consideramos que os dois grupos têm valores bem parecidos olhand o tempo dormido durante a semana,  porém, no final de semana o grupo de cdd dorme quase 1 hora a mais do que o grupo de fpcc.
+

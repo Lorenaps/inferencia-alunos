@@ -60,6 +60,33 @@ dados %>%
     xlim(5, 10)
 ```
 
+```{r}
+
+
+dados %>% 
+    group_by(turma) %>%
+    summarise(media_semana = mean(sono_semana), 
+              media_fds = mean(sono_fds))
+
+dados %>%
+    group_by(turma) %>%
+    mutate(diferenca = sono_semana - sono_fds) %>%
+    select(turma, diferenca) %>%
+    write.csv("../data/sono_alunos_dif.csv")
+
+dados %>%
+    group_by(turma) %>%
+    mutate(diferenca = sono_semana - sono_fds) %>%
+    select(turma, diferenca) %>%
+    group_by(turma) %>%
+    summarise(diff_media = mean(diferenca))
+
+```
+
+Olhando a média dos dois grupos, fica mais facil de entender o resultado da imagem anterior. 
+
+A turma de cdd em media dorme mais do que a turma de fpcc, quand consideramos que os dois grupos tem valores bem parecidos quando pensamos no tempo dormido durate a semana, porem no final de semana o grupo de cdd dorme quase 1 hora a mais do que o o outro grupo 
+
 ## Com ICs
 
 ### FDS
